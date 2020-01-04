@@ -1,8 +1,7 @@
-
 public class Node<V> {
-    protected Node parent;
-    protected Node left;
-    protected Node right;
+    protected Node<V> parent;
+    protected Node<V> left;
+    protected Node<V> right;
     protected COLOR color;
     protected int key;
     protected V value;
@@ -12,7 +11,7 @@ public class Node<V> {
         BLACK
     }
 
-    public Node(Node parent, Node left, Node right, int key, V value){
+    public Node(Node<V> parent, Node<V> left, Node<V> right, int key, V value){
         this.parent = parent;
         this.left = left;
         this.right = right;
