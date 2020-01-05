@@ -11,8 +11,7 @@ public class RBTree<K extends Comparable<K>, V> {
     }
 
     /**
-     * search a tuple(pair) given the key
-     *
+     * Search a tuple given the key.
      * @param key key of the tuple
      * @return value of the tuple. If not found, return null.
      */
@@ -37,8 +36,7 @@ public class RBTree<K extends Comparable<K>, V> {
     }
 
     /**
-     * get the minimum key
-     *
+     * Get the minimum key.
      * @return the minimum key (null if the tree is empty)
      */
     public K min() {
@@ -60,9 +58,8 @@ public class RBTree<K extends Comparable<K>, V> {
     }
 
     /**
-     * get the maximum key
-     *
-     * @return the maximum key (-1 if the tree is empty)
+     * Get the maximum key.
+     * @return the maximum key (null if the tree is empty)
      */
     public K max() {
         Node<K, V> temp = maxHelper(root);
@@ -83,8 +80,7 @@ public class RBTree<K extends Comparable<K>, V> {
     }
 
     /**
-     * insert a tuple(pair) of key and value into the tree (replace value if the key exists)
-     *
+     * Insert a tuple of key and value into the tree (replace value if the key already exists)
      * @param key   key of the tuple
      * @param value value of the tuple
      */
@@ -129,8 +125,7 @@ public class RBTree<K extends Comparable<K>, V> {
     }
 
     /**
-     * delete the tuple(pair) given the key
-     *
+     * Delete the tuple given the key
      * @param key key of the tuple
      */
     public void delete(K key) {
@@ -145,77 +140,111 @@ public class RBTree<K extends Comparable<K>, V> {
     }
 
     private void deleteHelper(Node<K, V> deleted) {
-        //TODO: fix the bug if delete the root
-        if ((deleted.left == null) && (deleted.right == null)) { // the deleted node has no child
-            if ((deleted.parent.left != null) && (deleted.parent.left.key == deleted.key)) {
-                deleted.parent.left = null;
+        if (deleted.parent == null) { //if the node is root
+            if (root.right != null) {
+                Node<K, V> newRoot = minHelper(root.right);
+                root.key = newRoot.key;
+                root.value = newRoot.value;
+                deleteHelper(newRoot);
             } else {
-                deleted.parent.right = null;
+                root = null;
+                System.out.println("The tree is empty.");
             }
-        } else if ((deleted.left != null) && (deleted.right == null)) { // the deleted node has only left child
-            deleted.key = deleted.left.key;
-            deleted.value = deleted.left.value;
-            deleted.left = null;
-        } else if (deleted.left == null) { // the deleted node has only right child
-            deleted.key = deleted.right.key;
-            deleted.value = deleted.right.value;
-            deleted.right = null;
-        } else { // the deleted node has two child
-            Node<K, V> sub = minHelper(deleted.right);
-            if (sub.color == Node.COLOR.RED) {
-                deleted.key = sub.key;
-                deleted.value = sub.value;
-                deleteHelper(sub);
-            } else {
-                if ((sub.parent.left != null) && (sub.parent.left.key == sub.key)) { // if sub is on the left
-                    if (sub.parent.right.color == Node.COLOR.RED) { // if the sibling of sub is red
-                        sub.parent.right.color = Node.COLOR.BLACK;
-                        sub.parent.color = Node.COLOR.RED;
-                        rotateLeft(sub.parent);
-                        deleteHelper(sub);
+        } else {
+            if (deleted.color == Node.COLOR.RED) { // if the deleted node is red
+                if ((deleted.left == null) && (deleted.right == null)) { // the deleted node has no child
+                    if ((deleted.parent.left != null) && (deleted.parent.left.key.compareTo(deleted.key) == 0)) {
+                        deleted.parent.left = null;
                     } else {
-                        if ((sub.parent.right.right != null) && (sub.parent.right.right.color == Node.COLOR.RED)) {
-                            Node.COLOR temp = sub.parent.color;
-                            sub.parent.color = sub.parent.right.color;
-                            sub.parent.right.color = temp;
-                            sub.parent.right.right.color = Node.COLOR.BLACK;
-                            rotateLeft(sub.parent);
-                            deleteHelper(sub);
-                        } else if ((sub.parent.right.right != null) && (sub.parent.right.right.color == Node.COLOR.BLACK) && (sub.parent.right.left != null) && (sub.parent.right.left.color == Node.COLOR.RED)) {
-                            sub.parent.right.color = Node.COLOR.RED;
-                            sub.parent.right.left.color = Node.COLOR.BLACK;
-                            rotateRight(sub.parent.right);
-                            deleteHelper(sub);
-                        } else {
-                            sub.parent.right.color = Node.COLOR.RED;
-                            sub = sub.parent;
-                            deleteHelper(sub);
-                        }
+                        deleted.parent.right = null;
                     }
-                } else {
-                    assert sub.parent.left != null;
-                    if (sub.parent.left.color == Node.COLOR.RED) { // if the sibling of sub is red
-                        sub.parent.left.color = Node.COLOR.BLACK;
-                        sub.parent.color = Node.COLOR.RED;
-                        rotateRight(sub.parent);
-                        deleteHelper(sub);
-                    } else {
-                        if ((sub.parent.left.left != null) && (sub.parent.left.left.color == Node.COLOR.RED)) {
-                            Node.COLOR temp = sub.parent.color;
-                            sub.parent.color = sub.parent.right.color;
-                            sub.parent.left.color = temp;
-                            sub.parent.left.left.color = Node.COLOR.BLACK;
-                            rotateRight(sub.parent);
-                            deleteHelper(sub);
-                        } else if ((sub.parent.left.left != null) && (sub.parent.left.left.color == Node.COLOR.BLACK) && (sub.parent.left.right != null) && (sub.parent.left.right.color == Node.COLOR.RED)) {
-                            sub.parent.left.color = Node.COLOR.RED;
-                            sub.parent.left.right.color = Node.COLOR.BLACK;
-                            rotateLeft(sub.parent.left);
-                            deleteHelper(sub);
-                        } else {
-                            sub.parent.left.color = Node.COLOR.RED;
-                            sub = sub.parent;
-                            deleteHelper(sub);
+                } else { // the deleted node has two children
+                    deleted.color = Node.COLOR.BLACK;
+                    deleteHelper(minHelper(deleted.right));
+                }
+            } else { // if the deleted node is black
+                if ((deleted.left != null) && (deleted.right == null)) { // the deleted node has only left child
+                    deleted.key = deleted.left.key;
+                    deleted.value = deleted.left.value;
+                    deleted.left = null;
+                } else if ((deleted.left == null) && (deleted.right != null)) { // the deleted node has only right child
+                    deleted.key = deleted.right.key;
+                    deleted.value = deleted.right.value;
+                    deleted.right = null;
+                } else { // the deleted node has two children or do not have children
+                    if ((deleted.parent.left != null) && (deleted.parent.left.key.compareTo(deleted.key) == 0)) { // if is on the left
+                        if(deleted.parent.right == null){
+                            deleted.parent.color = Node.COLOR.BLACK;
+                            deleted.parent.left = null;
+                        }
+                        else if (deleted.parent.right.color == Node.COLOR.RED) { // if the sibling of is red
+                            if((deleted.parent.right.left == null) && (deleted.parent.right.right == null)){ // if the sibling has no child
+                                deleted.parent.left = null;
+                            }
+                            else {
+                                deleted.parent.right.color = Node.COLOR.BLACK;
+                                deleted.parent.color = Node.COLOR.RED;
+                                rotateLeft(deleted.parent);
+                                deleteHelper(deleted);
+                            }
+                        } else { // if the sibling is black
+                            if ((deleted.parent.right.right != null) && (deleted.parent.right.right.color == Node.COLOR.RED)) {
+                                Node.COLOR temp = deleted.parent.color;
+                                deleted.parent.color = deleted.parent.right.color;
+                                deleted.parent.right.color = temp;
+                                deleted.parent.right.right.color = Node.COLOR.BLACK;
+                                rotateLeft(deleted.parent);
+                                deleteHelper(deleted);
+                            } else if ((deleted.parent.right.right != null) && (deleted.parent.right.right.color == Node.COLOR.BLACK)
+                                    && (deleted.parent.right.left != null) && (deleted.parent.right.left.color == Node.COLOR.RED)) {
+                                deleted.parent.right.color = Node.COLOR.RED;
+                                deleted.parent.right.left.color = Node.COLOR.BLACK;
+                                rotateRight(deleted.parent.right);
+                                deleteHelper(deleted);
+                            } else {
+                                deleted.parent.right.color = Node.COLOR.RED;
+                                deleted.key = deleted.parent.key;
+                                deleted.value = deleted.parent.value;
+                                deleted = deleted.parent;
+                                deleteHelper(deleted);
+                            }
+                        }
+                    } else { // if the is on the right
+                        if(deleted.parent.left == null){
+                            deleted.parent.color = Node.COLOR.BLACK;
+                            deleted.parent.right = null;
+                        }
+                        else if (deleted.parent.left.color == Node.COLOR.RED) { // if the sibling of is red
+                            if((deleted.parent.left.left == null) && (deleted.parent.left.right == null)){ // if the sibling has no child
+                                deleted.parent.right = null;
+                            }
+                            else {
+                                deleted.parent.left.color = Node.COLOR.BLACK;
+                                deleted.parent.color = Node.COLOR.RED;
+                                rotateRight(deleted.parent);
+                                deleteHelper(deleted);
+                            }
+                        } else { // if the sibling is black
+                            if ((deleted.parent.left.left != null) && (deleted.parent.left.left.color == Node.COLOR.RED)) {
+                                Node.COLOR temp = deleted.parent.color;
+                                deleted.parent.color = deleted.parent.right.color;
+                                deleted.parent.left.color = temp;
+                                deleted.parent.left.left.color = Node.COLOR.BLACK;
+                                rotateRight(deleted.parent);
+                                deleteHelper(deleted);
+                            } else if ((deleted.parent.left.left != null) && (deleted.parent.left.left.color == Node.COLOR.BLACK)
+                                    && (deleted.parent.left.right != null) && (deleted.parent.left.right.color == Node.COLOR.RED)) {
+                                deleted.parent.left.color = Node.COLOR.RED;
+                                deleted.parent.left.right.color = Node.COLOR.BLACK;
+                                rotateLeft(deleted.parent.left);
+                                deleteHelper(deleted);
+                            } else {
+                                deleted.parent.left.color = Node.COLOR.RED;
+                                deleted.key = deleted.parent.key;
+                                deleted.value = deleted.parent.value;
+                                deleted = deleted.parent;
+                                deleteHelper(deleted);
+                            }
                         }
                     }
                 }
@@ -224,8 +253,7 @@ public class RBTree<K extends Comparable<K>, V> {
     }
 
     /**
-     * Balance the red-black-tree.
-     *
+     * Balance the red-black-tree after insertion.
      * @param current the inserted node from bottom to the top
      */
     public void balance(Node<K, V> current) {
@@ -237,7 +265,7 @@ public class RBTree<K extends Comparable<K>, V> {
             //The uncle node exists and its color is red
             if ((current.parent.parent.left != null)
                     && (current.parent.parent.right != null)
-                    && (current.parent.parent.left.key == current.parent.key)
+                    && (current.parent.parent.left.key.compareTo(current.parent.key) == 0)
                     && (current.parent.parent.right.color == Node.COLOR.RED)) {
                 current.parent.color = Node.COLOR.BLACK;
                 current.parent.parent.right.color = Node.COLOR.BLACK;
@@ -245,7 +273,7 @@ public class RBTree<K extends Comparable<K>, V> {
                 balance(current.parent.parent);
             } else if ((current.parent.parent.left != null)
                     && (current.parent.parent.right != null)
-                    && (current.parent.parent.right.key == current.parent.key)
+                    && (current.parent.parent.right.key.compareTo(current.parent.key) == 0)
                     && (current.parent.parent.left.color == Node.COLOR.RED)) {
                 current.parent.color = Node.COLOR.BLACK;
                 current.parent.parent.left.color = Node.COLOR.BLACK;
@@ -254,8 +282,8 @@ public class RBTree<K extends Comparable<K>, V> {
             }
             //The uncle node does not exist or its color is black
             //The parent node is on the left
-            else if ((current.parent.parent.left != null) && (current.parent.parent.left.key == current.parent.key)) {
-                if ((current.parent.left != null) && (current.parent.left.key == current.key)) { // the node is on the left
+            else if ((current.parent.parent.left != null) && (current.parent.parent.left.key.compareTo(current.parent.key)) == 0) {
+                if ((current.parent.left != null) && (current.parent.left.key.compareTo(current.key)) == 0) { // the node is on the left
                     current.parent.color = Node.COLOR.BLACK;
                     current.parent.parent.color = Node.COLOR.RED;
                     rotateRight(current.parent.parent);
@@ -267,8 +295,8 @@ public class RBTree<K extends Comparable<K>, V> {
                 }
             }
             //The parent node is on the right
-            else if ((current.parent.parent.right != null) && (current.parent.parent.right.key == current.parent.key)) {
-                if ((current.parent.left != null) && (current.parent.left.key == current.key)) { // the node is on the left
+            else if ((current.parent.parent.right != null) && (current.parent.parent.right.key.compareTo(current.parent.key)) == 0) {
+                if ((current.parent.left != null) && (current.parent.left.key.compareTo(current.key)) == 0) { // the node is on the left
                     rotateRight(current.parent);
                     current.color = Node.COLOR.BLACK;
                     current.parent.color = Node.COLOR.RED;
@@ -282,15 +310,15 @@ public class RBTree<K extends Comparable<K>, V> {
         }
     }
 
+
     public void rotateLeft(Node<K, V> peak) {
         if (peak.right == null) {
             System.out.println("CANNOT rotateLeft (" + peak.key + "    " + peak.value.toString() + ")");
             return;
         }
-        System.out.println("rotateLeft (" + peak.key + "    " + peak.value.toString() + ")");
         Node<K, V> newPeak = peak.right;
         if (peak.parent != null) {
-            if ((peak.parent.left != null) && (peak.parent.left.key == peak.key)) {
+            if ((peak.parent.left != null) && (peak.parent.left.key.compareTo(peak.key)) == 0) {
                 peak.parent.left = newPeak;
             } else {
                 peak.parent.right = newPeak;
@@ -314,10 +342,9 @@ public class RBTree<K extends Comparable<K>, V> {
             System.out.println("CANNOT rotateRight (" + peak.key + "    " + peak.value.toString() + ")");
             return;
         }
-        System.out.println("rotateRight (" + peak.key + "    " + peak.value.toString() + ")");
         Node<K, V> newPeak = peak.left;
         if (peak.parent != null) {
-            if ((peak.parent.left != null) && (peak.parent.left.key == peak.key)) {
+            if ((peak.parent.left != null) && (peak.parent.left.key.compareTo(peak.key)) == 0) {
                 peak.parent.left = newPeak;
             } else {
                 peak.parent.right = newPeak;
@@ -340,7 +367,7 @@ public class RBTree<K extends Comparable<K>, V> {
      * Print the tree.
      */
     public void show() {
-        System.out.println("size: " + size);
+        System.out.println("Size of the tree: " + size);
         preOrderPrint(root, 0);
     }
 
@@ -356,6 +383,5 @@ public class RBTree<K extends Comparable<K>, V> {
             preOrderPrint(current.right, (indent + 1));
         }
     }
-
 
 }

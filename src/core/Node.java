@@ -8,11 +8,6 @@ public class Node<K extends Comparable<K>, V> {
     protected K key;
     protected V value;
 
-    public enum COLOR {
-        RED,
-        BLACK
-    }
-
     public Node(Node<K, V> parent, Node<K, V> left, Node<K, V> right, K key, V value) {
         this.parent = parent;
         this.left = left;
@@ -22,5 +17,8 @@ public class Node<K extends Comparable<K>, V> {
         this.value = value;
     }
 
-
+    public enum COLOR {
+        RED,
+        BLACK
+    }
 }
